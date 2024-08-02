@@ -1,23 +1,26 @@
-import { getVideoData } from "@/server/queries";
-import Image from "next/image";
+import { getGameData } from "@/server/queries";
 
 export default async function HomePage() {
-  const videoDataList = await getVideoData(["EeF3UTkCoxY"]);
-  // console.log(videoData?.snippet?.thumbnails);
-
+  const gameData = await getGameData({ mode: "likes" });
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      {videoDataList?.map((videoData) => {
-        return (
-          <Image
-            key={videoData?.id}
-            src={videoData?.snippet?.thumbnails?.maxres?.url ?? ""}
-            width={videoData?.snippet?.thumbnails?.maxres?.width ?? 480}
-            height={videoData?.snippet?.thumbnails?.maxres?.height ?? 360}
-            alt="Thumbnail"
-          />
-        );
-      })}
+      <ol className="flex list-decimal flex-col gap-4 p-4">
+        {gameData?.map((item) => {
+          return (
+            // <Image
+            //   key={videoData?.id}
+            //   src={videoData?.snippet?.thumbnails?.maxres?.url ?? ""}
+            //   width={videoData?.snippet?.thumbnails?.maxres?.width ?? 480}
+            //   height={videoData?.snippet?.thumbnails?.maxres?.height ?? 360}
+            //   alt="Thumbnail"
+            // />
+            <li key={item?.videoId}>
+              <p>{item?.title}</p>
+              <span>{item?.videoId}</span>
+            </li>
+          );
+        })}
+      </ol>
     </main>
   );
 }
