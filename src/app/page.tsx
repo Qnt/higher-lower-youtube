@@ -1,4 +1,5 @@
-import { type GameDataItem, getGameData } from "@/server/queries";
+import { getGameData } from "@/server/queries";
+import { type GameDataItem } from "@/types";
 import Game from "./_components/game";
 
 export default async function HomePage() {
