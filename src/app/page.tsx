@@ -1,10 +1,11 @@
-import { getGameData } from "@/server/queries";
+import { type GameDataItem, getGameData } from "@/server/queries";
+import Game from "./_components/game";
 
 export default async function HomePage() {
-  const gameData = await getGameData({ mode: "likes" });
+  const gameData: GameDataItem[] = await getGameData({ mode: "likes" });
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <ol className="flex list-decimal flex-col gap-4 p-4">
+      {/* <ol className="flex list-decimal flex-col gap-4 p-4">
         {gameData?.map((item) => {
           return (
             // <Image
@@ -20,7 +21,8 @@ export default async function HomePage() {
             </li>
           );
         })}
-      </ol>
+      </ol> */}
+      <Game gameData={gameData} />
     </main>
   );
 }

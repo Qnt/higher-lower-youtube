@@ -1,14 +1,14 @@
+import { mockGameData } from "@/data/mock";
 import { env } from "@/env";
+import {
+  type GameDataItem,
+  type GameDataOptions,
+  type PlaylistIds,
+} from "@/types";
 import { youtube, type youtube_v3 } from "@googleapis/youtube";
 import "server-only";
 
 const service = youtube("v3");
-
-type GameDataOptions = {
-  mode: "views" | "likes" | "dislikes";
-};
-type PlaylistId = string;
-type PlaylistIds = Record<GameDataOptions["mode"], PlaylistId[]>;
 
 const PLAYLIST_IDS: PlaylistIds = {
   views: [
@@ -25,8 +25,8 @@ export async function getVideoData(videoIdList: string[]) {
   try {
     const response = await service.videos.list({
       id: videoIdList,
-      part: ["snippet", "contentDetails", "statistics"],
-      fields: "items(id,snippet,statistics)",
+      part: ["statistics"],
+      fields: "items(statistics)",
       key: env.YOUTUBE_API_KEY,
     });
     if (response?.data?.items?.length === 0) {
@@ -73,7 +73,7 @@ export async function getAllItemsFromPlaylists(playlistId: string) {
   return allPlaylistItems;
 }
 
-export async function getGameData({ mode }: GameDataOptions) {
+export async function gelAllItemsFromAllPlaylists({ mode }: GameDataOptions) {
   const promises = PLAYLIST_IDS[mode].map((playlistId) =>
     getAllItemsFromPlaylists(playlistId),
   );
@@ -81,14 +81,32 @@ export async function getGameData({ mode }: GameDataOptions) {
     .flat()
     .filter((video) => video?.status?.privacyStatus === "public");
 
-  return normilizeGameData(allPlaylistItems);
+  return allPlaylistItems;
 }
 
-function normilizeGameData(gameData: youtube_v3.Schema$PlaylistItem[]) {
+function getDummyGameData({ mode }: GameDataOptions): GameDataItem[] {
+  return mockGameData;
+}
+
+// TODO: a proper mocking solution
+export async function getGameData({
+  mode,
+}: GameDataOptions): Promise<GameDataItem[]> {
+  if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
+    return getDummyGameData({ mode });
+  }
+  const allItemsFromAllPlaylists = await gelAllItemsFromAllPlaylists({ mode });
+  const gameDataNormalized = normilizeGameData(allItemsFromAllPlaylists);
+  return gameDataNormalized;
+}
+
+function normilizeGameData(
+  gameData: youtube_v3.Schema$PlaylistItem[],
+): GameDataItem[] {
   return gameData.map((item) => {
     return {
       title: item?.snippet?.title,
-      thumbnail: item?.snippet?.thumbnails,
+      thumbnails: item?.snippet?.thumbnails,
       videoId: item?.snippet?.resourceId?.videoId,
     };
   });
